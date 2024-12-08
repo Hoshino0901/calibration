@@ -37,18 +37,6 @@ class SABR_model:
         sigma_denominator = (F_0 * K) ** ((1 - beta) * 0.5) * (1 + (1 - beta) ** 2 / 24 * (math.log(F_0 / K)) ** 2 + (1 - beta) ** 4 / 1920 * (math.log(F_0 / K)) ** 4)
         sigma_last_part = 1 + ((1 - beta) ** 2 / 24 * alpha * alpha / (F_0 * K) ** (1 - beta) + 0.25 * rho * beta * nu * alpha / (F_0 * K) ** ((1 - beta) * 0.5) + (2 - 3 * rho * rho) / 24 * nu * nu) * T
         return alpha / sigma_denominator * z / chi * sigma_last_part
-    
-    def _generate_path(self, steps=10**5 ,seed=0) -> np.ndarray:
-        paths = np.zeros((2, steps + 1))
-        paths[0, :] = [self.F_0, self.alpha]
-        mean = [0, 0]
-        cov = [[1, self.rho],
-              [self.rho, 1]]
-        bms = npr.multivariate_normal(mean, cov, (2, steps))
-        for i in range(steps):
-            paths[0, i+1] = paths[0, i] + paths[1, i] * paths[0, i] ** self.beta * bms[0, i]
-            paths[1, i+1] = paths[1, i] + self.nu * paths[1, i] * bms[1, i]
-        return paths
 
     def calc_plain_vanilla_price_from_vola(self, K : float, sigma : float, is_call : bool) -> float:
         d1 = (math.log(self.F_0 / K) + 0.5 * sigma * sigma * self.params.T()) / (sigma * math.sqrt(self.params.T()))
